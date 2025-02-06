@@ -1,0 +1,13 @@
+[package]
+name       = "vegetable-oil"
+version    = "0.1.0"
+edition    = "2021"
+license    = "MIT OR Apache-2.0"
+readme     = "README.md"
+repository = "https://github.com/titaniumtraveler/vegetable-oil"
+homepage   = "https://github.com/titaniumtraveler/vegetable-oil"
+
+[dependencies]
+anyhow        = "1.0.95"
+clap          = { version = "4.5.27", features = ["cargo", "derive"] }
+clap_complete = "4.5.44"
