@@ -1,10 +1,9 @@
-use crate::{ops::read, types::CurrentState};
+use crate::{ops::read, types::CurrentState, util};
 use clap::{crate_name, CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell};
 use std::{
     ffi::OsStr,
-    fs::File,
-    io::{self, BufWriter, Read},
+    io,
     os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
 };
@@ -39,15 +38,7 @@ impl Cli {
     pub fn run(self) -> anyhow::Result<()> {
         match self.cmd {
             Subcommands::Read { file, cwd } => {
-                let paths = if let b"-" = file.as_os_str().as_encoded_bytes() {
-                    let mut buf = Vec::with_capacity(0x1000);
-                    io::stdin().read_to_end(&mut buf)?;
-                    buf
-                } else {
-                    let mut buf = Vec::with_capacity(0x1000);
-                    File::open(file)?.read_to_end(&mut buf)?;
-                    buf
-                };
+                let paths = util::io::read_input_bytes(&file, 0x1000)?;
 
                 let state = read::read_paths(
                     cwd.as_deref(),
@@ -57,11 +48,8 @@ impl Cli {
                         .map(|slice| Path::new(OsStr::from_bytes(slice))),
                 )?;
 
-                serde_json::to_writer(
-                    BufWriter::new(io::stdout().lock()),
-                    &CurrentState { current: state },
-                )
-                .map_err(Into::into)
+                util::io::write_json_to_stdout(&CurrentState { current: state })?;
+                Ok(())
             }
             Subcommands::Completions { shell } => {
                 generate(shell, &mut Cli::command(), crate_name!(), &mut io::stdout());
