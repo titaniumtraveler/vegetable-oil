@@ -64,5 +64,5 @@ where
         });
     }
 
-    Ok(State { entries })
+    Ok(State(entries))
 }
